@@ -12,7 +12,7 @@ const TaskListScreen: React.FC = () => {
     if (null == state.taskLists) {
       api.fetchTaskLists();
     }
-  }, [state]);
+  }, []);
 
   // Get a handle on the router
   const navigate = useNavigate();

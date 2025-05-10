@@ -34,24 +34,19 @@ const TaskListScreen: React.FC = () => {
 
       setIsLoading(true);
       try {
-        if (!taskList) {
+        if (!state.taskLists.find((tl) => tl.id === listId)) {
           await api.getTaskList(listId);
         }
-
-        try {
-          await api.fetchTasks(listId);
-        } catch (error) {
-          console.log("Tasks not available yet:", error); // Log the error
-        }
+        await api.fetchTasks(listId);
       } catch (error) {
-        console.error("Error loading task list:", error); // Log the error
+        console.error("Error loading task list:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadInitialData();
-  }, [listId, taskList, api]);
+  }, [listId, api]);
 
   const completionPercentage = React.useMemo(() => {
     if (listId && state.tasks[listId]) {
