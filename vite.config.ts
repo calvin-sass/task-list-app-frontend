@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://task-app-backend-r2t0.onrender.com/",
+        target: "https://task-app-backend-r2t0.onrender.com",
         changeOrigin: true,
       },
     },
