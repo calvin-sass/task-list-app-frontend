@@ -34,10 +34,13 @@ const TaskListScreen: React.FC = () => {
 
       setIsLoading(true);
       try {
+        // Check if the task list and tasks have already been fetched
         if (!state.taskLists.find((tl) => tl.id === listId)) {
           await api.getTaskList(listId);
         }
-        await api.fetchTasks(listId);
+        if (!state.tasks[listId]) {
+          await api.fetchTasks(listId);
+        }
       } catch (error) {
         console.error("Error loading task list:", error);
       } finally {
@@ -46,7 +49,7 @@ const TaskListScreen: React.FC = () => {
     };
 
     loadInitialData();
-  }, [listId, api]);
+  }, [listId, api, state.taskLists, state.tasks]);
 
   const completionPercentage = React.useMemo(() => {
     if (listId && state.tasks[listId]) {
@@ -61,13 +64,12 @@ const TaskListScreen: React.FC = () => {
 
   const toggleStatus = (task: Task) => {
     if (listId && task.id) {
-      // Ensure task.id is defined
       const updatedTask = { ...task };
       updatedTask.status =
         task.status === TaskStatus.CLOSED ? TaskStatus.OPEN : TaskStatus.CLOSED;
 
       api
-        .updateTask(listId, task.id, updatedTask) // task.id is guaranteed to be a string here
+        .updateTask(listId, task.id, updatedTask)
         .then(() => api.fetchTasks(listId));
     } else {
       console.error("Task ID or List ID is missing.");
@@ -127,7 +129,7 @@ const TaskListScreen: React.FC = () => {
                 variant="ghost"
                 onClick={() => {
                   if (task.id) {
-                    api.deleteTask(listId, task.id); // Ensure task.id is defined
+                    api.deleteTask(listId, task.id);
                   } else {
                     console.error("Task ID is missing.");
                   }

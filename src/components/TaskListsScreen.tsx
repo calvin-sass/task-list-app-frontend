@@ -1,16 +1,32 @@
 import { Button, Card, CardBody, Progress } from "@nextui-org/react";
 import { List, Plus } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../AppProvider";
 
 const TaskListScreen: React.FC = () => {
   const { state, api } = useAppContext();
+  const [loading, setLoading] = useState(true);
 
   // Fetch task lists when the component mounts
   useEffect(() => {
-    api.fetchTaskLists();
-  }, []);
+    const fetchData = async () => {
+      if (state.taskLists.length === 0) {
+        setLoading(true);
+        try {
+          await api.fetchTaskLists();
+        } catch (error) {
+          console.error("Error fetching task lists:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [state]);
 
   // Get a handle on the router
   const navigate = useNavigate();
@@ -23,6 +39,10 @@ const TaskListScreen: React.FC = () => {
     navigate(`/task-lists/${taskListId}`);
     console.log(`Navigating to task list ${taskListId}`);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="p-4 max-w-sm w-full">
