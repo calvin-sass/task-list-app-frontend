@@ -175,25 +175,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     headers: { "Content-Type": "application/json" },
   };
 
+  // URL constant
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   // API calls
   const api: AppContextType["api"] = {
     fetchTaskLists: async () => {
-      const response = await axios.get<TaskList[]>(
-        "/api/task-lists",
-        jsonHeaders
-      );
+      const response = await axios.get<TaskList[]>(API_BASE_URL, jsonHeaders);
       dispatch({ type: FETCH_TASKLISTS, payload: response.data });
     },
     getTaskList: async (id: string) => {
       const response = await axios.get<TaskList>(
-        `/api/task-lists/${id}`,
+        `${API_BASE_URL}/${id}`,
         jsonHeaders
       );
       dispatch({ type: GET_TASKLIST, payload: response.data });
     },
     createTaskList: async (taskList) => {
       const response = await axios.post<TaskList>(
-        "/api/task-lists",
+        API_BASE_URL,
         taskList,
         jsonHeaders
       );
@@ -201,7 +201,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     getTask: async (taskListId: string, taskId: string) => {
       const response = await axios.get<Task>(
-        `/api/task-lists/${taskListId}/tasks/${taskId}`,
+        `${API_BASE_URL}/${taskListId}/tasks/${taskId}`,
         jsonHeaders
       );
       dispatch({
@@ -211,19 +211,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     updateTaskList: async (id, taskList) => {
       const response = await axios.put<TaskList>(
-        `/api/task-lists/${id}`,
+        `${API_BASE_URL}/${id}`,
         taskList,
         jsonHeaders
       );
       dispatch({ type: UPDATE_TASKLIST, payload: response.data });
     },
     deleteTaskList: async (id) => {
-      await axios.delete(`/api/task-lists/${id}`, jsonHeaders);
+      await axios.delete(`${API_BASE_URL}/${id}`, jsonHeaders);
       dispatch({ type: DELETE_TASKLIST, payload: id });
     },
     fetchTasks: async (taskListId) => {
       const response = await axios.get<Task[]>(
-        `/api/task-lists/${taskListId}/tasks`,
+        `${API_BASE_URL}/${taskListId}/tasks`,
         jsonHeaders
       );
       dispatch({
@@ -233,7 +233,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     createTask: async (taskListId, task) => {
       const response = await axios.post<Task>(
-        `/api/task-lists/${taskListId}/tasks`,
+        `${API_BASE_URL}/${taskListId}/tasks`,
         task,
         jsonHeaders
       );
@@ -244,7 +244,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     updateTask: async (taskListId, taskId, task) => {
       const response = await axios.put<Task>(
-        `/api/task-lists/${taskListId}/tasks/${taskId}`,
+        `${API_BASE_URL}/${taskListId}/tasks/${taskId}`,
         task,
         jsonHeaders
       );
@@ -255,7 +255,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     deleteTask: async (taskListId, taskId) => {
       await axios.delete(
-        `/api/task-lists/${taskListId}/tasks/${taskId}`,
+        `${API_BASE_URL}/${taskListId}/tasks/${taskId}`,
         jsonHeaders
       );
       dispatch({ type: DELETE_TASK, payload: { taskListId, taskId } });
