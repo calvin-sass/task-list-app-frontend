@@ -1,10 +1,10 @@
 import { parseDate } from "@internationalized/date";
 import {
   Button,
-  Progress,
-  Spacer,
   Checkbox,
   DateInput,
+  Progress,
+  Spacer,
   Table,
   TableBody,
   TableCell,
@@ -30,11 +30,13 @@ const TaskListScreen: React.FC = () => {
 
   useEffect(() => {
     const loadInitialData = async () => {
-      if (!listId) return;
+      if (!listId) {
+        console.error("List ID is missing.");
+        return;
+      }
 
       setIsLoading(true);
       try {
-        // Check if the task list and tasks have already been fetched
         if (!state.taskLists.find((tl) => tl.id === listId)) {
           await api.getTaskList(listId);
         }
@@ -104,7 +106,7 @@ const TaskListScreen: React.FC = () => {
           <TableCell className="px-4 py-2">{task.title}</TableCell>
           <TableCell className="px-4 py-2">{task.priority}</TableCell>
           <TableCell className="px-4 py-2">
-            {task.dueDate && (
+            {task.dueDate ? (
               <DateInput
                 isDisabled
                 defaultValue={parseDate(
@@ -112,6 +114,8 @@ const TaskListScreen: React.FC = () => {
                 )}
                 aria-label={`Due date for task "${task.title}"`}
               />
+            ) : (
+              <span>No due date</span>
             )}
           </TableCell>
           <TableCell className="px-4 py-2">
@@ -147,7 +151,7 @@ const TaskListScreen: React.FC = () => {
   };
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spinner aria-label="Loading tasks..." />;
   }
 
   return (
