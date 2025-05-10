@@ -1,10 +1,10 @@
 import { parseDate } from "@internationalized/date";
 import {
   Button,
-  Checkbox,
-  DateInput,
   Progress,
   Spacer,
+  Checkbox,
+  DateInput,
   Table,
   TableBody,
   TableCell,
@@ -26,38 +26,33 @@ const TaskListScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Find task list directly from state instead of maintaining separate state
   const taskList = state.taskLists.find((tl) => listId === tl.id);
 
-  // Single useEffect to handle all initial data loading
   useEffect(() => {
     const loadInitialData = async () => {
       if (!listId) return;
 
       setIsLoading(true);
       try {
-        // Only fetch if we don't already have the task list
         if (!taskList) {
           await api.getTaskList(listId);
         }
 
-        // Attempt to fetch tasks - this may 404 but we'll try anyway
         try {
           await api.fetchTasks(listId);
         } catch (error) {
-          console.log("Tasks not available yet");
+          console.log("Tasks not available yet:", error); // Log the error
         }
       } catch (error) {
-        console.error("Error loading task list:", error);
+        console.error("Error loading task list:", error); // Log the error
       } finally {
         setIsLoading(false);
       }
     };
 
     loadInitialData();
-  }, [listId]); // Only depend on listId
+  }, [listId, taskList, api]);
 
-  // Calculate completion percentage based on tasks
   const completionPercentage = React.useMemo(() => {
     if (listId && state.tasks[listId]) {
       const tasks = state.tasks[listId];
@@ -70,34 +65,42 @@ const TaskListScreen: React.FC = () => {
   }, [state.tasks, listId]);
 
   const toggleStatus = (task: Task) => {
-    if (listId) {
+    if (listId && task.id) {
+      // Ensure task.id is defined
       const updatedTask = { ...task };
       updatedTask.status =
         task.status === TaskStatus.CLOSED ? TaskStatus.OPEN : TaskStatus.CLOSED;
 
       api
-        .updateTask(listId, task.id, updatedTask)
+        .updateTask(listId, task.id, updatedTask) // task.id is guaranteed to be a string here
         .then(() => api.fetchTasks(listId));
+    } else {
+      console.error("Task ID or List ID is missing.");
     }
   };
 
   const deleteTaskList = async () => {
-    if (null != listId) {
-      await api.deleteTaskList(listId);
-      navigate("/");
+    if (listId) {
+      try {
+        await api.deleteTaskList(listId);
+        navigate("/");
+      } catch (error) {
+        console.error("Failed to delete task list:", error);
+        alert("Failed to delete the task list. Please try again.");
+      }
     }
   };
 
   const tableRows = () => {
-    if (null != listId && null != state.tasks[listId]) {
+    if (listId && state.tasks[listId]) {
       return state.tasks[listId].map((task) => (
         <TableRow key={task.id} className="border-t">
           <TableCell className="px-4 py-2">
             <Checkbox
-              isSelected={TaskStatus.CLOSED == task.status}
+              isSelected={TaskStatus.CLOSED === task.status}
               onValueChange={() => toggleStatus(task)}
               aria-label={`Mark task "${task.title}" as ${
-                TaskStatus.CLOSED == task.status ? "open" : "closed"
+                TaskStatus.CLOSED === task.status ? "open" : "closed"
               }`}
             />
           </TableCell>
@@ -127,7 +130,13 @@ const TaskListScreen: React.FC = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => api.deleteTask(listId, task.id)}
+                onClick={() => {
+                  if (task.id) {
+                    api.deleteTask(listId, task.id); // Ensure task.id is defined
+                  } else {
+                    console.error("Task ID is missing.");
+                  }
+                }}
                 aria-label={`Delete task "${task.title}"`}
               >
                 <Trash className="h-4 w-4" />
@@ -136,13 +145,12 @@ const TaskListScreen: React.FC = () => {
           </TableCell>
         </TableRow>
       ));
-    } else {
-      return null;
     }
+    return [];
   };
 
   if (isLoading) {
-    return <Spinner />; // Or your preferred loading indicator
+    return <Spinner />;
   }
 
   return (
