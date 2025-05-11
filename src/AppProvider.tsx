@@ -177,7 +177,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL ||
-    "https://task-app-backend-r2t0.onrender.com/api";
+    "https://task-app-backend-r2t0.onrender.com";
 
   // API calls
   const api: AppContextType["api"] = {
